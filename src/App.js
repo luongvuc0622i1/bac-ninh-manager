@@ -55,6 +55,13 @@ const App = () => {
       data[index].geometry.name = formData.name;
       data[index].coordinates.go = formData.go;
       data[index].coordinates.back = formData.back;
+    } else {
+      const feature = {
+        type: "Feature",
+        geometry: { ...formData,
+         },
+        coordinates: { ...formData.coordinates }
+      };
     }
     // setData([...data, formData]);
     console.log(data)
