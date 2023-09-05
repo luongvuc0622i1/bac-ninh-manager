@@ -1,25 +1,21 @@
 import React, { useState, useEffect } from 'react';
-// import fs from 'fs-extra';
 import routes from './data/routes.json';
+import { saveAs } from 'file-saver';
 
-const App = () => {
+export default function App() {
   const [data, setData] = useState([]);
-  const [formData, setFormData] = useState({
+  const nullForm = {
     id: '',
     name: '',
     go: '',
     back: '',
-  });
+  };
+  const [formData, setFormData] = useState(nullForm);
   const [index, setIndex] = useState();
 
-  // const readFile = async () => {
-  //   try {
-  //     const jsonData = await fs.readJson('data.json');
-  //     setData(jsonData.features);
-  //   } catch (error) {
-  //     console.error('Error reading file:', error);
-  //   }
-  // };
+  useEffect(() => {
+    readFile();
+  }, []);
 
   const readFile = async () => {
     try {
@@ -30,23 +26,15 @@ const App = () => {
     }
   };
 
-  // const writeFile = async () => {
-  //   try {
-  //     await fs.writeJson('data.json', { type: 'FeatureCollection', features: data });
-  //     console.log('File saved successfully');
-  //   } catch (error) {
-  //     console.error('Error writing file:', error);
-  //   }
-  // };
-
   const writeFile = async () => {
-    try {
-      // await fs.writeJson('data.json', { type: 'FeatureCollection', features: data });
-      console.log('File saved successfully');
-      console.log(data)
-    } catch (error) {
-      console.error('Error writing file:', error);
-    }
+    const featureCollection = {
+      type: "FeatureCollection",
+      features: data,
+    };
+    // Tạo đối tượng Blob từ dữ liệu đã định dạng
+    const blob = new Blob([JSON.stringify(featureCollection)], { type: 'application/json' });
+    const fileName = 'dataExport.json';
+    saveAs(blob, fileName);
   };
 
   const handleAddFeature = () => {
@@ -58,25 +46,29 @@ const App = () => {
     } else {
       const feature = {
         type: "Feature",
-        geometry: { ...formData,
-         },
-        coordinates: { ...formData.coordinates }
+        geometry: {
+          id: formData.id,
+          name: formData.name,
+          status: true
+        },
+        coordinates: {
+          go: formData.go,
+          back: formData.back
+        },
+        properties: {}
       };
+      // Tạo bản sao mới của mảng data
+      const newData = [...data];
+      // Thêm phần tử mới vào newData
+      newData.push(feature);
+      // Cập nhật trạng thái với newData
+      setData(newData);
     }
-    // setData([...data, formData]);
-    console.log(data)
-    // setFormData({
-    //   id: '',
-    //   name: '',
-    //   go: '',
-    //   back: '',
-    // });
+    setIndex();
+    setFormData(nullForm);
   };
 
   const handleEditFeature = (index) => {
-    // const updatedData = [...data];
-    // updatedData[index] = formData;
-    // setData(updatedData);
     setIndex(index);
     setFormData({
       id: data[index].geometry.id,
@@ -90,10 +82,6 @@ const App = () => {
     const updatedData = data.filter((_, i) => i !== index);
     setData(updatedData);
   };
-
-  useEffect(() => {
-    readFile();
-  }, []);
 
   return (
     <div>
@@ -112,7 +100,7 @@ const App = () => {
           {data.map((feature, index) => (
             <tr key={index}>
               <td>{feature.geometry.id}</td>
-              <td>{feature.geometry.name.name}</td>
+              <td>{feature.geometry.name}</td>
               <td>{feature.coordinates.go}</td>
               <td>{feature.coordinates.back}</td>
               <td>
@@ -155,5 +143,3 @@ const App = () => {
     </div>
   );
 };
-
-export default App;
